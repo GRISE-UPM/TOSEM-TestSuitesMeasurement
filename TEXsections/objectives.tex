@@ -1,0 +1,38 @@
+% !TEX encoding = UTF-8 Unicode
+\section{Research questions and methodology}\label{sec:objectives}
+
+\subsection{Research questions}\label{sec:questions}
+
+Test suites are being used routinely as measuring instruments in TDD experiments, e.g., \cite{Causevic2012,Desai2009,Erdogmus2005,Fucci2013}. TDD experiments are being combined through meta-analysis \cite{rafique2012effects}. We have shown that the experimental results are conditional on the test suites. The same applies, indirectly, to the meta-analyses based on those TDD studies. 
+
+We are concerned about the use of test suites as measuring instruments. We aim to evaluate to which degree similar test suites, e.g., with comparable branch coverage, give different measures. \textbf{A better understanding of the role of test suites for measurement will provide decision criteria for the selection or construction, utilization, and sharing of test suites in SE experiments}.
+
+To the best of our knowledge, \textbf{this problem has not been addressed in the SE literature}. Given its relevance for the TDD community (and from a general perspective to the entire empirical SE), this paper sets out the following research questions:
+
+\vspace{0.8mm}
+
+\textbf{RQ1:} \textit{How} can we assess the accuracy of the measures obtained using test suites?
+
+\vspace{0.8mm}
+
+Measurement is a complex process. Scientists and engineers have developed specific procedures to assess the accuracy of measures, and compare measurement instruments. These procedures can be applied to test suites.
+
+\vspace{0.8mm}
+
+\textbf{RQ2:} \textit{How much} do the AH and EP datasets differ from each other?
+
+\vspace{0.8mm}
+
+The statistical analyses in Section~\ref{sec:problem-description} yield clearly different results. However, such results do not provide an indication of the extent to which the AH and PE datasets differ from each other. Common sense suggests that the differences are large, but we miss a concrete description of \textit{how large} they are.
+
+\subsection{Research method}\label{sec:method}
+
+The research questions posed above imply the comparison of two sets of measurements (AH and EP) generated using different test suites (\textit{ad-hoc} and \textit{equivalence partitioning}). 
+
+The comparison of measurements is not new in SE. Quite a few papers address the comparison of metrics, e.g., \cite{basili1981evaluating,zhang2007performance,zhao1998comparison,jiang2008comparing,di2007comparing}. However, these works do not put the metrics themselves into question, but they typically examine their predictive ability to choose the ''best'' metric for a purpose. Other works, e.g., \cite{meneely2012validating} provide metric validation criteria, but these criteria do not include procedures and methods to compare metrics and decide which ones are more accurate. To conclude, \textbf{we miss theoretical foundations to analyze and compare measurements in SE}.
+
+In turn, different scientific disciplines (e.g., Medicine, Psychology, and Metrology particularly) have dealt with the problem of comparing measurements, giving rise to different comparison approaches. To the best of our knowledge, none of them has been used in SE so far.
+
+\textbf{To answer RQ1}, we provide in Section~\ref{sec:comparison} an abridged description of the different comparison approaches that apply to our research problem.
+
+\textbf{To answer RQ2}, we apply in Section~\ref{sec:comparison-results} all suitable comparison procedures to the AH and EP datasets, with a threefold purpose: (1) quantify how large the differences between measurements are, (2) illustrate how the different comparison approaches can be used in practice, and (3) choose the simplest procedure for routinely use in SE.

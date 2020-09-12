@@ -1,0 +1,197 @@
+\SweaveInput{common.Rnw}
+
+\section{Comparison of the AH and EP measuring instruments}\label{sec:comparison-results}
+
+In this section, we will answer \textbf{RQ2: \textit{How much} do the AH and EP datasets differ from each other?}
+
+In terms of measurement theory, analyzing the differences between the AH and EP datasets is equivalent to assessing the accuracy (trueness and precision) of the AH and EP measuring instruments. We will use the four comparison methods (repeatability, intermediate precision, Bland-Altman plot and the ICC) described in Section~\ref{sec:comparison}.
+
+\subsection{Repeatability analysis}\label{repeatability-analysis}
+
+Test suites are popular measuring instruments because the measurement is automatic and \textbf{repeatable}. Running the same test suite on the same code yields always the same results\footnote{Varying results are possible when the code depends on some random input. For proper testing in those cases, the random portion should be isolated, e.g., using mocking, to achieve deterministic results \cite{Koskela2013}.}.
+
+The only source of uncertainty when using test suites for measurement is the human operator. To perform the measurement, the operator at least should: (1) download the subject's code, (2) add the AH end EP test suites, (3) make the necessary adjustments to the code (e.g., resolve compilation problems), (4) run the test suites, and (5) write down the results. Measurement problems take place in the steps 3-4. Steps 1-2 influence sample preparation (not measurement), whereas in step 5 only transcription problems may take place.
+
+Step 3 can be performed in different ways. One option is not to make any change to the subjects' code. In this case, due to the repeatable character of the measurement with test suites, the obtained measures have always the same value. This implies that $s_r = 0$. 
+
+\begin{framed}
+
+In the PT and EC experiments, the measurer made small changes (e.g., method names, the order of parameters, etc.) to avoid zero QLTY scores due to clerical errors. Using this strategy, when measurements are repeated \textbf{in a short time}, the results do not vary, because the changes are predictable. Thus, $s_r = 0$ again.
+
+\end{framed}
+
+More complex strategies for connecting the subject's code and the test cases (e.g., fixing loop bounds, order or invocation, etc.) may be more demanding in memory's terms so that the measures do change, giving $s_r > 0$.
+
+\subsection{Intermediate precision}\label{intermediate-precision-analysis}
+
+The intermediate precision $s_{R_w}$ represents the uncertainty produced by the measuring instruments. The intermediate precision assumes that the replicate measurements are made ''on the same or similar object'' (see Section~\ref{sec:intermediate}). This implies a problem in SE experiments. 
+We cannot assume that the pieces of code collected in an experiment are similar; in fact, they exhibit a great degree of variation.
+
+Providentially, the nested model proposed in ISO 5725-3 \cite{ISO5725} can be expanded with additional factors, as long as the nesting structure is specified in the model. We have performed the measurement on \Sexpr{nrow(expdata[expdata$Instrument=="EP",])} programs from both the PT and EC experiments\footnote{The origin of the code (PT or EC sites) is irrelevant in the accuracy of the AH and EP test suites}. The new factor Program is nested within the Measurement Instrument. The corresponding model is a simple extension of Eq.~\ref{eq:linear-model-intermediate}:
+\begin{equation}
+\label{eq:linear-model-intermediate-extended}
+QLTY = Instrument/Program + \epsilon
+\end{equation}
+
+The analysis was conducted with the following R command:
+
+<<intermediate-precision-analysis-1, echo = TRUE>>=
+lm <- aov(QLTY ~ 1 + Instrument + Instrument/Program,
+          data = expdata)
+@
+
+<<intermediate-precision-analysis-2, echo = FALSE, results=hide>>=
+tmp <- tidy(lm)
+Mmeansq <- tmp$meansq[1]
+Pmeansq <- tmp$meansq[2]
+nM <- tmp$df[1]+1
+nP <- (tmp$df[2]/nM) + 1
+n <- 1
+s2M <- round((Mmeansq - Pmeansq)/(n * nP), 2)
+sM <- round(sqrt(s2M), 2)
+@
+
+\begin{table}[htb]
+\small
+\centering
+\caption{Estimation of $s_M$ using Eq.~\ref{eq:linear-model-intermediate-extended}}
+\label{tab:intermediate-precision-analysis}
+<<intermediate-precision-analysis-3, results=tex>>=
+print(xtable(lm,
+          digits = 2),
+     floating = FALSE)
+@
+\end{table}
+
+Table~\ref{tab:intermediate-precision-analysis} shows the analysis results. The residual is zero, because as we explained above $s_r = 0$. $s^2_M$ is calculated as \cite[pp. 626]{montgomery2017design}:
+\begin{equation}
+\label{eq:linear-model-intermediate-extended-component-variance}
+s^2_M = \frac{MS(Instrument) - MS(Program)}{n \times p}
+\end{equation}
+being $MS(f)$ the mean square of the factor ''f'', $n$ the number of replicated measurements (in this case, $n = \Sexpr{n}$) and $p$ the number of programs nested within measuring instruments ($p = \Sexpr{nP}$). This gives the value:
+\begin{center}
+$s^2_M = \frac{\Sexpr{round(Mmeansq, 2)} - \Sexpr{round(Pmeansq, 2)}}{\Sexpr{n} \times \Sexpr{nP}} = \Sexpr{s2M}$
+\end{center}
+
+The intermediate precision of the measuring instruments is $s_M = \sqrt{s^2_M + s^2_r} = \sqrt{\Sexpr{s2M} + 0} = \Sexpr{sM}$. Using $k = 2$, the expanded uncertainty (see Eq.~\ref{eq:expanded-uncertainty2}) is $2 \times \Sexpr{sM} = \Sexpr{eu <- 2*sM}$.
+
+\begin{framed}
+
+When the Ah and EP test suites are used as measuring instruments (e.g., in two different experiments, later combined using meta-analysis), measures that theoretically speaking should be similar (e.g., because the measured programs exhibit the same QLTY) can differ up to $\pm \Sexpr{eu}\%$.
+
+\end{framed}
+
+\subsection{Bland-Altman method}
+
+\begin{figure}[!t]
+<<bland-altman-analysis, echo=FALSE, results=hide, fig=TRUE, width=5>>=
+# extract the data required by Meth: Instrument, item measured, replication number...
+item <- do.call(paste0, expdata[c(2, 3)])
+meth <- expdata$Instrument
+repl <- rep(1, nrow(expdata))
+
+# QLTY measurement
+y <- expdata$QLTY
+dataqlty <- Meth(data.frame(meth, item, repl, y))
+
+# Bland-altman plots
+par(mar=c(5, 4, 4, 4) + 0.1)
+BA.plot(dataqlty, 
+        main = "Quality",
+        alpha = NULL,
+        axlim=c(0,100), 
+        diflim = c(-100, 100), 
+        digits = 2, 
+        col.lines = "black",
+        cex =  0.8,
+        las = 1,
+        pch = 1)
+
+# calculation of differences
+auxq <- expdata[c("Instrument", "Program", "QLTY")]
+auxq <- reshape(auxq, idvar = "Program", timevar = "Instrument", direction = "wide")
+auxq <- auxq[c("QLTY.EP", "QLTY.AH")]
+dqlty <- auxq$`QLTY.EP` - auxq$`QLTY.AH`
+md <- mean(dqlty)
+sd <- sd(dqlty)
+lower_limit <- round(md + 2 * sd, 2)
+upper_limit <- round(md - 2 * sd, 2)
+md <- round(md, 2)
+sd <- round(sd, 2)
+@
+  \caption{Bland-Altman plot}
+  \label{fig:bland-altman-plot}
+\end{figure}
+
+The Bland-Altman method uses the differences between measures (Eq.~\ref{eq:bland-altman-difference}) to calculate the accuracy of the measuring instruments. The mean difference $\bar{d} = \Sexpr{md}$ means that the AH and EP measuring instruments differ \Sexpr{abs(md)}\% units \textit{in average}\cprotect\footnote{As a side note, $\bar{d}$ can also be obtained from Eq.~\ref{eq:linear-model-intermediate-extended} as the difference between the mean effects of the AH and EP test suites. These effects can be obtained using:
+<<echo=true, results=hide>>=
+tmp <- emmeans(lm, ~Instrument)
+@
+<<echo=false, results=hide>>=
+AHeffect <- tidy(tmp)$estimate[2]
+EPeffect <- tidy(tmp)$estimate[1]
+difference <- AHeffect - EPeffect
+@
+The mean effects for AH and EP are \Sexpr{round(AHeffect, 2)} and \Sexpr{round(EPeffect, 2)} respectively. Their difference $\Sexpr{round(AHeffect, 2)} - \Sexpr{round(EPeffect, 2)} = \Sexpr{round(AHeffect-EPeffect, 2)}$ is equal to $\bar{d}$.}
+(notice that QLTY is measured as a percentage). The standard deviation of the differences is $s_d = \Sexpr{sd}$.
+
+Fig.~\ref{fig:bland-altman-plot} shows the same information visually. The central line represents the mean difference $\bar{d} = \Sexpr{md}$, whereas the top and bottom lines delimit the range of variation of the differences between measurements (the points displayed in the plot). Those limits are calculated as $\bar{d} \pm 2 \times s_d = \Sexpr{md} \pm \Sexpr{2 * sd}$.
+
+\begin{framed}
+
+According to the Bland-Altman method, the measures made on the same code by the AH and EP test suites may vary up to \Sexpr{2 * sd}\% in either direction. Actually, we can see in Fig.~\ref{fig:bland-altman-plot} some measures that even exceed such limits. The AH test suite tends to give higher values (\Sexpr{abs(md)}\% in average) than the EP test suite.
+
+\end{framed}
+
+\subsection{ICC}\label{sec:icc-results}
+
+The ICC is obtained using Eq.~\ref{eq:icc} which, in turn, requires the calculation of the lineal model depicted in Eq.~\ref{eq:linear-model-icc}. That model is calculated using the R command:
+
+<<icc-analysis-1, echo = TRUE>>=
+lm <- aov(QLTY ~ 1 + Instrument + Program,
+          data = expdata)
+@
+
+<<icc-analysis-2, echo = FALSE, results = hide>>=
+tmp <- tidy(lm)
+Mmeansq <- tmp$meansq[1]
+nP <- tmp$df[2]+ 1
+Rmeansq <- tmp$meansq[3]
+s2M <- round((Mmeansq - Rmeansq)/nP, 2)
+s2e <- round(Rmeansq, 2)
+@
+
+\begin{table}[htb]
+\small
+\centering
+\caption{Estimation of $s_M$ and $\epsilon$ using Eq.~\ref{eq:linear-model-icc}}
+\label{tab:icc-analysis}
+<<icc-analysis-3, results=tex>>=
+print(xtable(lm,
+          digits = 2),
+     floating = FALSE)
+@
+\end{table}
+
+The results of the analysis is shown in Table~\ref{tab:icc-analysis}. There are strong similarities with Table~\ref{tab:intermediate-precision-analysis} because the models are rather similar. $s_M$ can be calculated from Table~\ref{tab:icc-analysis} as \cite{indrayan2013clinical}:
+\begin{equation}
+\label{eq:icc-component-variance}
+s^2_M = \frac{MS(M) - MS(Residual)}{p}
+\end{equation}
+The notation has the same meaning than in Section~\ref{intermediate-precision-analysis}. $s^2_M$ is thus:
+\begin{center}
+$s^2_M = \frac{\Sexpr{round(Mmeansq, 2)} - \Sexpr{round(Rmeansq, 2)}}{\Sexpr{nP}} = \Sexpr{s2M}$
+\end{center}
+
+The value of $s^2_M$ is slightly different than the one obtained in Section~\ref{intermediate-precision-analysis} because we are using different linear models in the calculations. The ICC is (see Eq.~\ref{eq:icc}):
+\begin{center}
+$\rho = \frac{s^2_M}{s^2_M + s^2_e} = \frac{\Sexpr{s2M}}{\Sexpr{s2M} + \Sexpr{s2e}} = \Sexpr{round(s2M/(s2M+s2e), 2)}$
+\end{center}
+
+The interpretation of $\rho$ is not evident. As a general rule, the lower the value, the less related (/similar) the measures taken by the AH and EP test suites for the same program. To interpret the ICC more easily, reference values are typically given in the literature. 
+
+\begin{framed}
+
+Two measurement instruments are considered to have a good agreement when $\rho \geq 0.75$ \cite{Fleiss2011}. In our case, the AH and EP test suites do not achieve that level.
+
+\end{framed}

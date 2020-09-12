@@ -1,0 +1,264 @@
+\SweaveInput{common.Rnw}
+
+\section{Comparing measurements}\label{sec:comparison}
+
+In this section, we will answer \textbf{RQ1: \textit{How} can we assess the accuracy of the measures obtained using test suites?}
+
+Depending on the scientific area, different strategies to compare measurement methods are used. Engineers and Natural Science practitioners are probably acquainted with the approaches advocated by JCGM (Joint Committee for Guides in Metrology) and ISO (International Standards Organization). In the Health Sciences, the Bland-Altman plot and the Intraclass Correlation Coefficient (ICC) are often used. The ICC has also been used in Psychology and the Social Sciences.
+
+\subsection{Fundamental concepts}
+
+Measure theory is the branch of mathematics dealing with the definition and properties of measures \cite{weissteinMeasureTheory}. In SE, ''measures'' are often referred to as ''metrics''. Albeit interchangeable in practice, we will use the term ''measure'' due to its specificity. Fenton and Bieman clarify the differences between both concepts \cite[pp.120-121]{fenton2014}).
+
+Metrology is the scientific counterpart, specifically interested in the practical implementation of measurements \cite{bipm-metrology} and, more importantly for our purposes, the \textbf{comparison of measurements}. 
+
+Measure theory has been the target of a substantial amount of research in SE. In turn, metrology has been overlooked (with few exceptions such as \cite{abran2002measurement,abran2004metrology}), giving rise to the absence of a methodological background to perform the comparisons of measurements. To fill this gap, we introduce specialized terminology in the following Sections and, later, the comparison methods themselves.
+
+\subsubsection{Basic definitions}\label{sec:basic}
+
+Metrology uses a standard vocabulary, collected in the VIM\footnote{ISO 3534-1 \cite{ISO3534} is an ISO standard that provides definitions similar in most respects to VIM. Other bodies, e.g., national standardization agencies may have defined their vocabularies, typically closely related to VIM.} (Vocabulaire International de M\'etrologie) \cite{VIM}.
+
+According to the VIM, a \textit{measurement} (2.1)\footnote{We include the VIM definition number between parentheses, so the reader can trace back to the standard easily.} is the "process of experimentally obtaining one or more quantity values" from a \textit{measurand} (2.3). 
+
+\begin{framed}
+In our case, the measurand is C++ or Java code satisfying some requirements specification (MR, BSK), and the measurement is the code's QLTY.
+\end{framed}
+
+Measurement is conducted according to some \textit{measurement method} (2.5), which describes the "logical organization of operations used in a measurement". Among other components, a measurement method includes a \textit{measuring instrument} and a \textit{measurement procedure}. A measuring instrument (3.1) is a "device used for making measurements, alone or in conjunction with one or more supplementary devices".
+
+\begin{framed}
+The \textit{ad-hoc} and \textit{equivalence partitioning} test suites are \textbf{measuring instruments} aimed at obtaining QLTY measurements. These instruments were used in conjunction with Eclipse and jUnit/Boost Test frameworks.
+\end{framed}
+
+A \textit{measurement procedure} (2.6) is a "detailed description of a measurement", typically intended for a human operator. The measurement method corresponds with the utilization of measurement instruments in practice. 
+
+\begin{framed}
+
+Measurement was performed by one researcher (F. Uyaguari) and involves several steps: (1) connecting the subjects' code with the test suites, resolving syntactic and semantic disagreements, (2) running the test suites, and (3) collecting the pass/failure information for the test cases.
+
+\end{framed}
+
+\subsubsection{Accuracy}\label{sec:accuracy}
+
+For this research, the concept of \textit{accuracy} is particularly relevant. Accuracy (2.13) is the "closeness of agreement between a measured quantity value and a true quantity value of a measurand". Accuracy has two components: \textit{trueness} and \textit{precision}, , as shown in Fig.~\ref{fig:accuracy}.
+
+\begin{itemize}
+
+\item \textit{Trueness} (2.14) is the "closeness of agreement between the average of an infinite number of replicate measured quantity values and a reference quantity value". Trueness has its origin in the presence of \textit{systematic errors} (2.17), also known as \textit{bias} (2.18).
+
+\item \textit{Precision} (2.15) is the "closeness of agreement between [...] measured quantity values obtained by replicate measurements on the same or similar objects under specified conditions". Precision emerges due to the existence of \textit{random errors} (2.19).
+
+\end{itemize}
+
+\begin{figure}[!t]
+\centering
+<<components-of-measurement-accuracy, fig=TRUE>>=
+# Generate data
+data <- rnorm(5000, mean = 5)
+
+# Make plot
+plot(density(data), main=NA, xlab=NA, xlim=c(0, 9), ylim=c(0,0.4), frame=F)
+
+# Draw vertical lines
+abline(v=mean(data), lty=2)
+abline(v=2, lty=2)
+
+# Enable writing outside frame and display labels
+par(xpd=NA)
+text(x=c(mean(data)), y=c(0.44), "Measured\nvalue")
+text(x=c(2), y=c(0.44), "Reference\nvalue")
+
+# Draw horizontal lines
+arrows(3, -0.06, 7, -0.06, code=3)
+text(c(5), c(-0.08), "Precision")
+arrows(2, 0.4, mean(data), 0.4, code=3)
+text(c(2+(mean(data)-2)/2), c(0.37), "Trueness")
+@
+\caption{Components of measurement \textit{accuracy} according to VIM. This figure assumes that the distribution of the random error is \textit{gaussian}, which is usual but not necessarily true in all circumstances}
+\label{fig:accuracy}
+\end{figure}
+
+\subsection{Determination of accuracy in Engineering and the Natural Sciences}
+
+The determination of accuracy can be performed in different circumstances or \textit{measurement conditions}: (1) Repeatability; (2) Intermediate precision, and (3) Reproducibility.
+
+\subsubsection{Repeatability condition}\label{sec:repeatability}
+
+\textit{Repeatability} (2.20) is the \textit{uncertainty} (2.26) of a set of measurements conducted using "the same measurement procedure, same operators, \textbf{ same measuring [instrument]}, same operating conditions and same location [...] on the same or similar objects over a \textbf{short period of time}". Repeatability is the metrology concept behind the saying ''Measure thrice, cut once'' \cite[p. 3]{Bell2001}, i.e., the concept of repeatability captures the random variability in the measurement process. 
+
+The authoritative source for repeatability analysis is the \textit{Guide to the Expression of Uncertainty in Measurement} (GUM) \cite{GUM}. GUM defines the repeatability uncertainty (denoted $s_r$) as the standard deviation\footnote{In some cases, measurements are not obtained directly. For instance, determining the distance to a distant object using parallax is an indirect measurement, based on two direct measurements: length and angle. The contributions of the length and angle measurements to the uncertainty should be independently determined and later combined using a formula related to Eq.~\ref{eq:propagation-law}; see \cite[Section 5]{GUM} for details.} 
+of a set of measures $Y = \{y_1, y_2, ..., y_n\}$:
+\begin{equation}
+\label{eq:repeatability-expression}
+s_r(Y)=\sqrt{\frac{1}{n-1}\sum\limits_{i = 1}^n {(y_i - \bar{y})^2}}
+\end{equation}
+
+In this research, $Y$ represents the response variables QLTY and PROD. $\bar{y}$ is the average of all measures, that is, the \textit{measured value} represented in Fig.~\ref{fig:accuracy}. $s_r$ represents the \textit{precision} component of the accuracy. The \textit{trueness} component cannot be captured by repeated measurement because the measurement method can be biased. Bias can be removed by calibration, that is, comparing the measurand with a \textit{reference value} (5.18). For instance, lengths can be traced back to the International Bureau of Weights and Measures' meter bar.
+Reference values are unusual but not impossible in SE. For instance, when we measure the correctness of a program against a specification (our research problem) we could code reference programs of known quality, e.g, programs satisfying none or all requirements. Any of these programs could be used as the reference value (at least in principle; see section \ref{sec:discussion} for a brief discussion). 
+Trueness would thus be calculated as:
+\begin{equation}
+\label{eq:bias-expression}
+\text{trueness} = \bar{y} - \text{reference value}
+\end{equation}
+
+When a reference value is not available, trueness cannot be calculated. However, the repeatability uncertainty is not affected, because the standard deviation is insensitive to location change, i.e., 
+\begin{equation}
+\label{eq:location-independence}
+s_r(Y) = s_r(Y - \text{trueness})
+\end{equation}
+
+In practice, repeatability analysis assumes that the instruments are not biased.
+
+\subsubsection{Intermediate precision analysis}\label{sec:intermediate}
+
+The \textit{intermediate precision} (2.22) is a "condition of measurement [...] that includes the same measurement procedure, same location, and replicate measurements on the same or similar objects over an \textbf{extended period of time}, but may include other conditions involving changes". The changes "can include [...] operators, and \textbf{measuring [instruments]}".
+
+The intermediate precision\footnote{The intermediate precision is also termed "within-lab reproducibility" \cite[p. 1]{magnusson2003handbook} because it addresses the variability that happens inside a measuring facility. This stands in contrast to the "between-lab reproducibility", described in Section~\ref{sec:reproducibility}.} deals with two different measurement situations:
+
+\begin{itemize}
+
+\item The variability in the measures that take place over time naturally, e.g., due to varying temperatures throughout the year.
+
+\item The changes in the measurement environment. A typical scenario is the usage of different instruments, e.g., thermometers, to perform the measurements. 
+
+\end{itemize}
+
+\begin{framed}
+
+Our research addresses the second situation. The measuring instruments (the \textit{ad-hoc} and \textit{equivalence partitioning} test suites) have different precisions that influence the overall precision of the measurements.
+
+\end{framed}
+
+The intermediate precision, denoted $s_{R_w}$\cite[p. 1]{magnusson2003handbook}, is calculated as\footnote{The square root is one of the realizations of the \textit{propagation law} defined in the GUM \cite{GUM}. It applies when several ($\geq 2$) independent uncertainties are added.}:
+\begin{equation}
+\label{eq:propagation-law}
+s_{R_w} = \sqrt{s^2_M + s^2_r}
+\end{equation}
+
+where $s^2_r$ is the reproducibility uncertainty described in the previous Section and $s^2_M$ is the uncertainty due to the measuring instrument. There are several recommendations to calculate $s^2_M$: the GUM \cite{GUM}, NordTest TR 537 \cite{magnusson2003handbook}, and ISO 5725-3 \cite{ISO5725}. The later is particularly useful for its simplicity. The intermediate precision is calculated using the nested model\footnote{Notice that the same objects are measured using AH and EP}:
+\begin{equation}
+\label{eq:linear-model-intermediate}
+Y = Instrument + \epsilon
+\end{equation}
+The $Instrument$ is the random factor that represents the measuring instruments implemented with the \textbf{AH and EP test suites}. $s_M$ is given by the associated component of variance, that we will describe in Section \ref{sec:comparison-results}. $\epsilon$ represents the lack of precision that \textit{cannot} be assigned to the $Instrument$, i.e., $\epsilon = s^2_r$ (the repeatability uncertainty).
+
+\subsubsection{Reproducibility uncertainty}\label{sec:reproducibility}
+
+Reproducibility (2.24) is the uncertainty of a set of measurements performed on "\textbf{different condition[s] of measurement}, out of a set of conditions that includes different locations, operators, measuring [instruments], and replicate measurements on the same or similar objects".
+
+The calculation of the reproducibility uncertainty (denoted $s_R$) is described in ISO 5725-2 \cite{ISO5725}. In this part of the standard, reproducibility uncertainty is defined as the uncertainty due to the lab where measurements are conducted. This assumption does not match our research problem, so we will not elaborate it further. However, it could be relevant in other measurement comparison scenarios in SE, e.g., when different research groups participate in the measurement of a multi-site experiment.
+
+\subsubsection{Standard vs. expanded uncertainties}\label{sec:expanded}
+
+$s_r$, $s_{R_w}$ and $s_R$ are standard uncertainties, that is, the $\sigma$ parameter of the normal distribution displayed in Fig.~\ref{fig:accuracy}. However, in a normal distribution, a large percentage of values (around 32\%) are more than 1 standard deviation apart the average (the measured value in Fig.~\ref{fig:accuracy}). 
+The \textit{expanded uncertainty} (2.35) provides more significant information about the degree to which measures may differ. Expanded uncertainties are the limits of the interval which includes $(1 - \alpha) \times 100\%$  of the differences among measures. 
+
+In the case of this research (2 measuring instruments, $n$ pieces of code, and one measure per instrument) the expanded uncertainty\footnote{The same formula applies to $s_r$ and $s_R$} would be:
+\begin{equation}
+\label{eq:expanded-uncertainty1}
+t_{(1-\alpha/2), (n-2)} \times s_{R_w}
+\end{equation}
+
+$k = t_{(1-\alpha/2), (n-2)}$ is known as \textit{coverage factor} (2.38). When $n \geq 30$, the normal approximation can be used. Typically, $\alpha$ = 0.05, and $k = Z_{(1-\alpha/2)} = 1.96$. In practice, $k$ is rounded up to 2.0 \cite[p. 24]{GUM}. The expanded uncertainty is thus defined as:
+\begin{equation}
+\label{eq:expanded-uncertainty2}
+2 \times s_{R_w}
+\end{equation}
+and represents the fact that any measure can \textbf{differ up to $\pm 2 \times s_{R_w}$ units} from the average \textit{measured value} (see Fig.~\ref{fig:accuracy}).
+
+\subsection{Determination of accuracy in the Health and Social Sciences}
+
+The correlation coefficient has been the usual procedure to compare measurements in the Health and Social Sciences. This procedure is rather well-known and we have used it already in Section~\ref{sec:problem-description}. 
+
+However, the correlation coefficient exhibits several problems as a comparison procedure. For instance, data with poor agreement\footnote{The term ''accuracy'' is not often used in the Health and Social Sciences. When variables have interval/ratio types, the term \textit{reliability} is frequently used; for nominal/ordinal variables, the most common term is \textit{agreement} \cite{Beckstead2011}. The terms \textit{consistency} and \textit{conformity} can also be found as synonyms of precision and trueness \cite{Muller1994}. Nevertheless, the terms vary depending on the source. For instance, Bland and Altman  \cite{Bland1986} use the term "Agreement" instead of "Reliability" with ratio scales.  We will use the terms defined in the VIM \cite{VIM} and reported in Section~\ref{sec:basic}.} can produce high correlations \cite{Bland1986}; this is exactly what we have observed in Section~\ref{sec:problem-description}. These problems recommended the design of alternative procedures, such as the Bland-Altman method and the usage of the ICC. We will describe both of them in the following sections.
+
+\subsubsection{Bland-Altman method}\label{sec:bland-altman-method}
+
+The Bland-Altman method \cite{Bland1986} is the \textit{de facto} standard for the comparison of measuring instruments in medicine. Contrary to the GUM and ISO, several objects (not the \textit{same} or \textit{similar} object) are involved in the measurement. Each object is measured twice using a different instrument. In our research problem, it implies that we would need two sets of measures: $Y_{AH} = \{y_{AH_1}, y_{AH_2}, \dots, y_{AH_n}\}$ and $Y_{EP} = \{y_{EP_1}, y_{EP_2}, \dots, y_{EP_n}\}$, being $1 \leq i \leq n$ different pieces of code.
+
+The Bland-Altman method starts with the calculation of the difference between\footnote{Procedures for more than two measuring instruments have been proposed in the literature, e.g., \cite{jones2011graphical}.} measurements:
+\begin{equation}
+\label{eq:bland-altman-difference}
+d_i=(y_{AH_i} - y_{EP_i})
+\end{equation}
+
+Next, the average of the differences $d_i$ is calculated as:
+
+\begin{equation}
+\label{eq:bland-altman-mean-difference}
+\bar{d}=\frac{1}{n}\sum\limits_{i = 1}^n {(y_{AH_i} - y_{EP_i})}
+\end{equation}
+
+and the standard deviation as:
+
+\begin{equation}
+\label{eq:bland-altman-sd-difference}
+s_d=\sqrt{\frac{1}{n-1}\sum\limits_{i = 1}^n {(d_i - \bar{d})^2}}
+\end{equation}
+
+The Bland-Altman method does not assume that the instruments are unbiased; for this reason, $\bar{d}$ represents the mean difference between the measurements obtained with the AH and EP test suites. If the instruments were unbiased, then $\bar{d} = 0$. $s_d$ is the standard deviation of the difference between measures.
+
+The Bland-Altman method has an associated graphical representation (the Bland-Altman plot), shown in Fig.~\ref{fig:example-bland-altman}. This graph plots the mean values obtained by both measuring instruments:
+\begin{equation}
+\label{eq:bland-altman-mean}
+\frac{y_{AH_i} + y_{EP_i}}{2}
+\end{equation}
+that is, the best estimation of the true measurement, against their difference:
+\begin{equation}
+\label{eq:bland-altman-difference}
+y_{AH_i} - y_{EP_i}
+\end{equation}
+
+A horizontal line is drawn at the mean difference $\bar{d}$. Additionally, the graph also displays two additional horizontal lines located at\footnote{According to Bland and Altman \cite{Bland1986}, either the level $k = 2$ or $k = 1.96$ can be used. We use $k=2$ to highlight the similarities among comparison methods.}:
+\begin{equation}
+\label{eq:bland-altman-limits}
+\bar{d} \pm 2 \times s_d
+\end{equation}
+
+Assuming a normal distribution for the differences, these limits enclose 95\% of the differences $d_i$. \textbf{These limits represent how much the measure on the same object varies when one instrument (AH) or another (EP) is used}.
+
+\begin{figure}[!t]
+\centering
+<<example-bland-altman, fig=TRUE>>=
+# Make plot
+par(mar=c(4,5,1,7))
+plot(c(), main=NA, xlab="Average of AH and\nPE measurements", ylab="Difference between AH\nand PE measurements", xlim=c(0, 10), ylim=c(0,10), frame=F)
+
+# Draw horizontal lines
+abline(h=8, lty=1)
+abline(h=5, lty=1)
+abline(h=2, lty=1)
+
+# Enable writing outside frame and display labels
+par(xpd=NA)
+text(x=10.4, y=8, pos=4, expression(bar(d) + 2 ~ x ~ s[d]))
+text(x=10.4, y=5, pos=4, expression(bar(d)))
+text(x=10.4, y=2, pos=4, expression(bar(d) - 2 ~ x ~ s[d]))
+
+# Draw a point and add an explanation
+points(2,6)
+segments(2,0,2,6, lty=2)
+segments(0,6,2,6, lty=2)
+text(x=2, y=6, pos=4, cex=1.1, "A piece of code has an average e.g.,\nQLTY of 2 units, but the measurement\nusing AH and PE differs in 6 units")
+@
+\caption{Interpretation of the Bland-Altman plot}
+\label{fig:example-bland-altman}
+\end{figure}
+
+\subsubsection{Intraclass correlation coefficient}\label{sec:icc}
+
+In the Health and Social Sciences, measurements are often scores assigned by human judges. In this case, ''accuracy'' is termed (inter-rater) \textit{agreement}, and represents the degree to which judges coincide with each other when rating the same item. The similarity between ''judges'' and ''measuring instruments'' is apparent. The connection was made for the first time by Lee et al., \cite{lee1989statistical}; they proposed using the ICC as a measure of accuracy.
+
+There are diverse strategies to assess inter-rater agreement\footnote{Refer to \cite{Gwet2014} for an in-depth description.}. For our research problem, the right one is the \textit{Inter-class Correlation Coefficient} (ICC) Model 3 (mixed factorial design), also known as ICC(3, 1) in some statistical packages such as SPSS\textsuperscript{\textregistered} \cite{Gwet2014, Muller1994}. 
+
+The underlying idea is as follows: ICC measures the strength of the relationship among items belonging to some class and compares it to the total variability. In this case, the class is each piece of code. Each class contains two values: the measures taken on that piece of code using both the AH and EP test suites. Mathematically speaking, ICC(3,1) is defined as:
+\begin{equation}
+\label{eq:icc}
+\rho = \frac{s^2_M}{s^2_M + s^2_e}
+\end{equation}
+where $s^2_M$ is the between-method variance\footnote{The values of $s^2_M$ given by Eqs. \ref{eq:linear-model-intermediate} and \ref{eq:linear-model-icc} are close but not alike. An example appears in section \ref{sec:icc-results}.}, and $s^2_e$ the error variance. $s^2_M$ and $s^2_e$ can be obtained from the linear model:
+\begin{equation}
+\label{eq:linear-model-icc}
+y = Instrument + Program + \epsilon
+\end{equation}
+whose interpretation is similar to Eq.~\ref{eq:linear-model-intermediate}.
