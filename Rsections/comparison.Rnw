@@ -8,7 +8,7 @@ Depending on the scientific area, different strategies to compare measurement me
 
 \subsection{Fundamental concepts}
 
-Measure theory is the branch of mathematics dealing with the definition and properties of measures \cite{weissteinMeasureTheory}. In SE, ''measures'' are often referred to as ''metrics''. Albeit interchangeable in practice, we will use the term ''measure'' due to its specificity. Fenton and Bieman clarify the differences between both concepts \cite[pp.120-121]{fenton2014}).
+Measure theory is the branch of mathematics dealing with the definition and properties of measures \cite{weissteinMeasureTheory}. In SE, ''measures'' are often referred to as ''metrics''. Albeit interchangeable in practice, we will use the term ''measure'' due to its specificity. Fenton and Bieman clarify the differences between both concepts \cite[pp.120-121]{fenton2014software}).
 
 Metrology is the scientific counterpart, specifically interested in the practical implementation of measurements \cite{bipm-metrology} and, more importantly for our purposes, the \textbf{comparison of measurements}. 
 
