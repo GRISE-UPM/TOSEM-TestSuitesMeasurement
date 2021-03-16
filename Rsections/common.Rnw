@@ -19,5 +19,6 @@ expdata[expdata$Session == 2 & expdata$Task == "BSK", ]$Group <- "$MR \\rightarr
 expdata[expdata$Session == 2 & expdata$Task == "MR", ]$Group <- "$BSK \\rightarrow MR$"
 expdata$Program  <- do.call(paste0, expdata[c(2, 3)])
 expdata <- expdata[order(expdata$Instrument, expdata$Program),]
+expdata$Program <- as.factor(expdata$Program)
 expdata$Instrument <- factor(expdata$Instrument, c("EP", "AH"))
 @

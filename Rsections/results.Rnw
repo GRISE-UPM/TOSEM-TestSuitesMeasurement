@@ -27,27 +27,23 @@ More complex strategies for connecting the subject's code and the test cases (e.
 The intermediate precision $s_{R_w}$ represents the uncertainty produced by the measuring instruments. The intermediate precision assumes that the replicate measurements are made ''on the same or similar object'' (see Section~\ref{sec:intermediate}). This implies a problem in SE experiments. 
 We cannot assume that the pieces of code collected in an experiment are similar; in fact, they exhibit a great degree of variation.
 
-Providentially, the nested model proposed in ISO 5725-3 \cite{ISO5725} can be expanded with additional factors, as long as the nesting structure is specified in the model. We have performed the measurement on \Sexpr{nrow(expdata[expdata$Instrument=="EP",])} programs from both the PT and EC experiments\footnote{The origin of the code (PT or EC sites) is irrelevant in the accuracy of the AH and EP test suites}. The new factor Program is nested within the Measurement Instrument. The corresponding model is a simple extension of Eq.~\ref{eq:linear-model-intermediate}:
+Providentially, the nested model proposed in ISO 5725-3 \cite{ISO5725} can be expanded with additional factors, as long as the nesting structure is specified in the model. We have performed the measurement on \Sexpr{nrow(expdata[expdata$Instrument=="EP",])} programs from both the PT and EC experiments\footnote{The origin of the code (PT or EC sites) is irrelevant in the accuracy of the AH and EP test suites}. The Measurement Instrument is nested within the new factor Program. The corresponding model is a simple extension of Eq.~\ref{eq:linear-model-intermediate}:
 \begin{equation}
 \label{eq:linear-model-intermediate-extended}
-QLTY = Instrument/Program + \epsilon
+QLTY = Program/Instrument + \epsilon
 \end{equation}
 
 The analysis was conducted with the following R command:
 
 <<intermediate-precision-analysis-1, echo = TRUE>>=
-lm <- aov(QLTY ~ 1 + Instrument + Instrument/Program,
+lm <- aov(QLTY ~ Program/Instrument,
           data = expdata)
 @
 
 <<intermediate-precision-analysis-2, echo = FALSE, results=hide>>=
 tmp <- tidy(lm)
-Mmeansq <- tmp$meansq[1]
-Pmeansq <- tmp$meansq[2]
-nM <- tmp$df[1]+1
-nP <- (tmp$df[2]/nM) + 1
-n <- 1
-s2M <- round((Mmeansq - Pmeansq)/(n * nP), 2)
+Imeansq <- tmp$meansq[2]
+s2M <- round(Imeansq, 2)
 sM <- round(sqrt(s2M), 2)
 @
 
@@ -63,15 +59,11 @@ print(xtable(lm,
 @
 \end{table}
 
-Table~\ref{tab:intermediate-precision-analysis} shows the analysis results. The residual is zero, because as we explained above $s_r = 0$. $s^2_M$ is calculated as \cite[pp. 626]{montgomery2017design}:
+Table~\ref{tab:intermediate-precision-analysis} shows the analysis results. The residual is zero, because as we explained above $s_r = 0$. $s^2_M$ is calculated as \cite[pp. 348-350]{box2005statistics}:
 \begin{equation}
 \label{eq:linear-model-intermediate-extended-component-variance}
-s^2_M = \frac{MS(Instrument) - MS(Program)}{n \times p}
+s^2_M = MS(Program:Instrument) = \Sexpr{sM}
 \end{equation}
-being $MS(f)$ the mean square of the factor ''f'', $n$ the number of replicated measurements (in this case, $n = \Sexpr{n}$) and $p$ the number of programs nested within measuring instruments ($p = \Sexpr{nP}$). This gives the value:
-\begin{center}
-$s^2_M = \frac{\Sexpr{round(Mmeansq, 2)} - \Sexpr{round(Pmeansq, 2)}}{\Sexpr{n} \times \Sexpr{nP}} = \Sexpr{s2M}$
-\end{center}
 
 The intermediate precision of the measuring instruments is $s_M = \sqrt{s^2_M + s^2_r} = \sqrt{\Sexpr{s2M} + 0} = \Sexpr{sM}$. Using $k = 2$, the expanded uncertainty (see Eq.~\ref{eq:expanded-uncertainty2}) is $2 \times \Sexpr{sM} = \Sexpr{eu <- 2*sM}$.
 
