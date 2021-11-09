@@ -135,10 +135,10 @@ The intermediate precision, denoted $s_{R_w}$\cite[p. 1]{magnusson2003handbook},
 s_{R_w} = \sqrt{s^2_M + s^2_r}
 \end{equation}
 
-where $s^2_r$ is the reproducibility uncertainty described in the previous Section and $s^2_M$ is the uncertainty due to the measuring instrument. There are several recommendations to calculate $s^2_M$: the GUM \cite{GUM}, NordTest TR 537 \cite{magnusson2003handbook}, and ISO 5725-3 \cite{ISO5725}. The later is particularly useful for its simplicity. The intermediate precision is calculated using the nested model\footnote{Notice that the same objects are measured using AH and EP}:
+where $s^2_r$ is the reproducibility uncertainty described in the previous Section and $s^2_M$ is the uncertainty due to the measuring instrument. There are several recommendations to calculate $s^2_M$: the GUM \cite{GUM}, NordTest TR 537 \cite{magnusson2003handbook}, and ISO 5725-3 \cite{ISO5725}. The later is particularly useful for its simplicity. The intermediate precision is calculated using the nested model\footnote{Notice that the same programs are measured using AH and EP}:
 \begin{equation}
 \label{eq:linear-model-intermediate}
-Y = Instrument + \epsilon
+Y = Program/Instrument + \epsilon
 \end{equation}
 The $Instrument$ is the random factor that represents the measuring instruments implemented with the \textbf{AH and EP test suites}. $s_M$ is given by the associated component of variance, that we will describe in Section \ref{sec:comparison-results}. $\epsilon$ represents the lack of precision that \textit{cannot} be assigned to the $Instrument$, i.e., $\epsilon = s^2_r$ (the repeatability uncertainty).
 

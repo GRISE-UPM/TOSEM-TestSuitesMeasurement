@@ -20,7 +20,7 @@ In the PT and EC experiments, the measurer made small changes (e.g., method name
 
 \end{framed}
 
-More complex strategies for connecting the subject's code and the test cases (e.g., fixing loop bounds, order or invocation, etc.) may be more demanding in memory's terms so that the measures do change, giving $s_r > 0$.
+More complex strategies for connecting the subject's code and the test cases (e.g., fixing loop bounds, order or invocation, etc.) may be more demanding in memory's terms so that the measures do change, giving $s_r > 0$. It does not happen in this research.
 
 \subsection{Intermediate precision}\label{intermediate-precision-analysis}
 
@@ -62,7 +62,7 @@ print(xtable(lm,
 Table~\ref{tab:intermediate-precision-analysis} shows the analysis results. The residual is zero, because as we explained above $s_r = 0$. $s^2_M$ is calculated as \cite[pp. 348-350]{box2005statistics}:
 \begin{equation}
 \label{eq:linear-model-intermediate-extended-component-variance}
-s^2_M = MS(Program:Instrument) = \Sexpr{sM}
+s^2_M = MS(Program:Instrument) = \Sexpr{s2M}
 \end{equation}
 
 The intermediate precision of the measuring instruments is $s_M = \sqrt{s^2_M + s^2_r} = \sqrt{\Sexpr{s2M} + 0} = \Sexpr{sM}$. Using $k = 2$, the expanded uncertainty (see Eq.~\ref{eq:expanded-uncertainty2}) is $2 \times \Sexpr{sM} = \Sexpr{eu <- 2*sM}$.
@@ -115,17 +115,7 @@ sd <- round(sd, 2)
   \label{fig:bland-altman-plot}
 \end{figure}
 
-The Bland-Altman method uses the differences between measures (Eq.~\ref{eq:bland-altman-difference}) to calculate the accuracy of the measuring instruments. The mean difference $\bar{d} = \Sexpr{md}$ means that the AH and EP measuring instruments differ \Sexpr{abs(md)}\% units \textit{in average}\cprotect\footnote{As a side note, $\bar{d}$ can also be obtained from Eq.~\ref{eq:linear-model-intermediate-extended} as the difference between the mean effects of the AH and EP test suites. These effects can be obtained using:
-<<echo=true, results=hide>>=
-tmp <- emmeans(lm, ~Instrument)
-@
-<<echo=false, results=hide>>=
-AHeffect <- tidy(tmp)$estimate[2]
-EPeffect <- tidy(tmp)$estimate[1]
-difference <- AHeffect - EPeffect
-@
-The mean effects for AH and EP are \Sexpr{round(AHeffect, 2)} and \Sexpr{round(EPeffect, 2)} respectively. Their difference $\Sexpr{round(AHeffect, 2)} - \Sexpr{round(EPeffect, 2)} = \Sexpr{round(AHeffect-EPeffect, 2)}$ is equal to $\bar{d}$.}
-(notice that QLTY is measured as a percentage). The standard deviation of the differences is $s_d = \Sexpr{sd}$.
+The Bland-Altman method uses the differences between measures (Eq.~\ref{eq:bland-altman-difference}) to calculate the accuracy of the measuring instruments. The mean difference $\bar{d} = \Sexpr{md}$ means that the AH and EP measuring instruments differ \Sexpr{abs(md)}\% units \textit{in average} (notice that QLTY is measured as a percentage). The standard deviation of the differences is $s_d = \Sexpr{sd}$.
 
 Fig.~\ref{fig:bland-altman-plot} shows the same information visually. The central line represents the mean difference $\bar{d} = \Sexpr{md}$, whereas the top and bottom lines delimit the range of variation of the differences between measurements (the points displayed in the plot). Those limits are calculated as $\bar{d} \pm 2 \times s_d = \Sexpr{md} \pm \Sexpr{2 * sd}$.
 
@@ -140,7 +130,7 @@ According to the Bland-Altman method, the measures made on the same code by the 
 The ICC is obtained using Eq.~\ref{eq:icc} which, in turn, requires the calculation of the lineal model depicted in Eq.~\ref{eq:linear-model-icc}. That model is calculated using the R command:
 
 <<icc-analysis-1, echo = TRUE>>=
-lm <- aov(QLTY ~ 1 + Instrument + Program,
+lm <- aov(QLTY ~ 1 +  Instrument + Program,
           data = expdata)
 @
 
@@ -168,7 +158,7 @@ print(xtable(lm,
 The results of the analysis is shown in Table~\ref{tab:icc-analysis}. There are strong similarities with Table~\ref{tab:intermediate-precision-analysis} because the models are rather similar. $s_M$ can be calculated from Table~\ref{tab:icc-analysis} as \cite{indrayan2013clinical}:
 \begin{equation}
 \label{eq:icc-component-variance}
-s^2_M = \frac{MS(M) - MS(Residual)}{p}
+s^2_M = \frac{MS(Instrument) - MS(Residual)}{p}
 \end{equation}
 The notation has the same meaning than in Section~\ref{intermediate-precision-analysis}. $s^2_M$ is thus:
 \begin{center}
