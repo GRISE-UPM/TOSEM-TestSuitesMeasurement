@@ -5,14 +5,6 @@
 \subsection{Accuracy of the AH and EP test suites}
 
 <<bland-altman-analysis, echo=FALSE, results=hide>>=
-# extract the data required by Meth: Instrument, item measured, replication number...
-item <- do.call(paste0, expdata[c(2, 3)])
-meth <- expdata$Instrument
-repl <- rep(1, nrow(expdata))
-
-# QLTY measurement
-y <- expdata$QLTY
-dataqlty <- Meth(data.frame(meth, item, repl, y))
 
 # calculation of differences
 auxq <- expdata[c("Instrument", "Program", "QLTY")]

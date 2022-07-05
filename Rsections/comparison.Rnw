@@ -135,12 +135,19 @@ The intermediate precision, denoted $s_{R_w}$\cite[p. 1]{magnusson2003handbook},
 s_{R_w} = \sqrt{s^2_M + s^2_r}
 \end{equation}
 
-where $s^2_r$ is the reproducibility uncertainty described in the previous Section and $s^2_M$ is the uncertainty due to the measuring instrument. There are several recommendations to calculate $s^2_M$: the GUM \cite{GUM}, NordTest TR 537 \cite{magnusson2003handbook}, and ISO 5725-3 \cite{ISO5725}. The later is particularly useful for its simplicity. The intermediate precision is calculated using the nested model\footnote{Notice that the same programs are measured using AH and EP}:
+where $s^2_r$ is the reproducibility uncertainty described in the previous Section and $s^2_M$ is the uncertainty due to the measuring instrument. There are several recommendations to calculate $s^2_M$: the GUM \cite{GUM}, NordTest TR 537 \cite{magnusson2003handbook}, and ISO 5725-3 \cite{ISO5725}. The later is particularly useful for its simplicity. The intermediate precision can be calculated using the model:
 \begin{equation}
 \label{eq:linear-model-intermediate}
-Y = Program/Instrument + \epsilon
+Y = Instrument + \epsilon
 \end{equation}
-The $Instrument$ is the random factor that represents the measuring instruments implemented with the \textbf{AH and EP test suites}. $s_M$ is given by the associated component of variance, that we will describe in Section \ref{sec:comparison-results}. $\epsilon$ represents the lack of precision that \textit{cannot} be assigned to the $Instrument$, i.e., $\epsilon = s^2_r$ (the repeatability uncertainty).
+where $Instrument$ is the random factor that represents the measuring instruments implemented with the \textbf{AH and EP test suites}. $s_M$ is given by the associated component of variance \cite[pp. 619--624]{montgomery2017design}:
+\begin{equation}
+\label{eq:component-of-variance}
+E(MS_{Instrument}) = s^2_r + n \times s^2_M
+\end{equation}
+being $n$ the number of measurements made with each instrument. $\epsilon$ represents the lack of precision that \textit{cannot} be assigned to the $Instrument$, i.e., $E(MS_{\epsilon}) = s^2_r$ (the repeatability uncertainty). 
+
+Please notice that we are measuring the same object with different instruments several times, i.e., we are essentially in repeatability measurement conditions. When different objects are involved (a usual situation in SE) the analysis model would be different; please see Section~\ref{intermediate-precision-analysis} for further information.
 
 \subsubsection{Reproducibility uncertainty}\label{sec:reproducibility}
 
@@ -249,16 +256,36 @@ text(x=2, y=6, pos=4, cex=1.1, "A piece of code has an average e.g.,\nQLTY of 2 
 
 In the Health and Social Sciences, measurements are often scores assigned by human judges. In this case, ''accuracy'' is termed (inter-rater) \textit{agreement}, and represents the degree to which judges coincide with each other when rating the same item. The similarity between ''judges'' and ''measuring instruments'' is apparent. The connection was made for the first time by Lee et al., \cite{lee1989statistical}; they proposed using the ICC as a measure of accuracy.
 
-There are diverse strategies to assess inter-rater agreement\footnote{Refer to \cite{Gwet2014} for an in-depth description.}. For our research problem, the right one is the \textit{Inter-class Correlation Coefficient} (ICC) Model 3 (mixed factorial design), also known as ICC(3, 1) in some statistical packages such as SPSS\textsuperscript{\textregistered} \cite{Gwet2014, Muller1994}. 
+There are diverse strategies to assess inter-rater agreement\footnote{Refer to \cite{Gwet2014} for an in-depth description.}. For our research problem, the right one is the \textit{Inter-class Correlation Coefficient} (ICC) Model 3 (mixed factorial design), also known as ICC(3, 1) in some statistical packages such as SPSS\textsuperscript{\textregistered} \cite{Gwet2014, Muller1994}. ICC(3, 1) is appropriate because [\textcolor{red}{a\~nadir referencia}]:
+\begin{itemize}
+
+\item The raters (in our case, the measuring instruments) are considered fixed factors, i.e., the only instruments of interest.
+
+\item Subjects (in our case, programs) are random factors, i. e., a sample.
+
+\item We are interested in the coincidences between measures.
+
+\item We only have one measurement per program/measuring instrument.
+
+\end{itemize}
 
 The underlying idea is as follows: ICC measures the strength of the relationship among items belonging to some class and compares it to the total variability. In this case, the class is each piece of code. Each class contains two values: the measures taken on that piece of code using both the AH and EP test suites. Mathematically speaking, ICC(3,1) is defined as:
 \begin{equation}
 \label{eq:icc}
-\rho = \frac{s^2_M}{s^2_M + s^2_e}
+\rho = \frac{s^2_C}{s^2_C + s^2_e}
 \end{equation}
-where $s^2_M$ is the between-method variance\footnote{The values of $s^2_M$ given by Eqs. \ref{eq:linear-model-intermediate} and \ref{eq:linear-model-icc} are close but not alike. An example appears in section \ref{sec:icc-results}.}, and $s^2_e$ the error variance. $s^2_M$ and $s^2_e$ can be obtained from the linear model:
+where $s^2_C$ is the variance due to the code (the random factor), and $s^2_e$ the error variance. $s^2_C$ and $s^2_e$ can be obtained from the linear model:
 \begin{equation}
 \label{eq:linear-model-icc}
 y = Instrument + Program + \epsilon
 \end{equation}
-whose interpretation is similar to Eq.~\ref{eq:linear-model-intermediate}.
+where [a\~nadir referencia]:
+\begin{equation}
+\label{eq:icc-component-variance-error}
+MS(Residual) = s^2_e
+\end{equation}
+and
+\begin{equation}
+\label{eq:icc-component-variance-instrument}
+MS(Program) = s^2_e + {number~of~instruments} \times s^2_C
+\end{equation}

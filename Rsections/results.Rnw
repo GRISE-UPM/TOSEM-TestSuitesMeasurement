@@ -27,7 +27,7 @@ More complex strategies for connecting the subject's code and the test cases (e.
 The intermediate precision $s_{R_w}$ represents the uncertainty produced by the measuring instruments. The intermediate precision assumes that the replicate measurements are made ''on the same or similar object'' (see Section~\ref{sec:intermediate}). This implies a problem in SE experiments. 
 We cannot assume that the pieces of code collected in an experiment are similar; in fact, they exhibit a great degree of variation.
 
-Providentially, the nested model proposed in ISO 5725-3 \cite{ISO5725} can be expanded with additional factors, as long as the nesting structure is specified in the model. We have performed the measurement on \Sexpr{nrow(expdata[expdata$Instrument=="EP",])} programs from both the PT and EC experiments\footnote{The origin of the code (PT or EC sites) is irrelevant in the accuracy of the AH and EP test suites}. The Measurement Instrument is nested within the new factor Program. The corresponding model is a simple extension
+Providentially, the model proposed in ISO 5725-3 \cite{ISO5725} can be expanded with additional factors, as long as the nesting structure is specified in the model. We have performed the measurement on \Sexpr{nrow(expdata[expdata$Instrument=="EP",])} programs from both the PT and EC experiments\footnote{The origin of the code (PT or EC sites) is irrelevant in the accuracy of the AH and EP test suites}. The Measurement Instrument is nested within the new factor Program. The corresponding model is a simple extension
 \footnote{This model can be seen as a restricted version of a more general procedure for the comparison of variances. See \cite[Chapter 9]{box2005statistics} for details.}
 of Eq.~\ref{eq:linear-model-intermediate}:
 \begin{equation}
@@ -61,7 +61,7 @@ print(xtable(lm,
 @
 \end{table}
 
-Table~\ref{tab:intermediate-precision-analysis} shows the analysis results. The residual is zero, because as we explained above $s_r = 0$. $s^2_M$ is calculated as \cite[pp. 348-350]{box2005statistics}:
+Table~\ref{tab:intermediate-precision-analysis} shows the analysis results. The residual is zero, because as we explained above $s_r = 0$. $s^2_M$ is calculated as \cite[pp. 619--624]{montgomery2017design}:
 \begin{equation}
 \label{eq:linear-model-intermediate-extended-component-variance}
 s^2_M = MS(Program:Instrument) = \Sexpr{s2M}
@@ -127,6 +127,14 @@ According to the Bland-Altman method, the measures made on the same code by the 
 
 \end{framed}
 
+When the measuring instruments are not biased (one does not give higher or lower measures than the other systematically, i.e., $\bar{d} = 0$), and their precision is equal, $s_d$ and $s_M$ (the intermediate precision) hold a mathematical relationship:
+\begin{equation}
+\label{eq:relationship-intermediate-precision-bland-altman}
+s_d = \sqrt{2} \times s_M
+\end{equation}
+
+In such a case, $s_d >> s_M$. Please notice that it does not mean that the intermediate precision is ''more conservative'' than the Bland-Altman method. The Bland-Altman method deals with differences between measures and the intermediate precision with the measures themselves. As the mean difference $\bar{d}$ increases, the values of $s_d$ and $s_M$ diverge.
+
 \subsection{ICC}\label{sec:icc-results}
 
 The ICC is obtained using Eq.~\ref{eq:icc} which, in turn, requires the calculation of the lineal model depicted in Eq.~\ref{eq:linear-model-icc}. That model is calculated using the R command:
@@ -136,19 +144,18 @@ lm <- aov(QLTY ~ 1 +  Instrument + Program,
           data = expdata)
 @
 
-<<icc-analysis-2, echo = FALSE, results = hide>>=
+<<icc-analysis-2, echo = FALSE, results=hide>>=
 tmp <- tidy(lm)
-Mmeansq <- tmp$meansq[1]
-nP <- tmp$df[2]+ 1
+Cmeansq <- tmp$meansq[2]
 Rmeansq <- tmp$meansq[3]
-s2M <- round((Mmeansq - Rmeansq)/nP, 2)
+s2C <- round((Cmeansq - Rmeansq)/2, 2)
 s2e <- round(Rmeansq, 2)
 @
 
 \begin{table}[htb]
 \small
 \centering
-\caption{Estimation of $s_M$ and $\epsilon$ using Eq.~\ref{eq:linear-model-icc}}
+\caption{Estimation of $s_I$ and $\epsilon$ using Eqs.~\ref{eq:icc-component-variance-error} and \ref{eq:icc-component-variance-instrument}}
 \label{tab:icc-analysis}
 <<icc-analysis-3, results=tex>>=
 print(xtable(lm,
@@ -157,19 +164,14 @@ print(xtable(lm,
 @
 \end{table}
 
-The results of the analysis is shown in Table~\ref{tab:icc-analysis}. There are strong similarities with Table~\ref{tab:intermediate-precision-analysis} because the models are rather similar. $s_M$ can be calculated from Table~\ref{tab:icc-analysis} as \cite[Table II]{indrayan2013clinical}:
-\begin{equation}
-\label{eq:icc-component-variance}
-s^2_M = \frac{MS(Instrument) - MS(Residual)}{p}
-\end{equation}
-The notation has the same meaning than in Section~\ref{intermediate-precision-analysis}. $s^2_M$ is thus:
+The results of the analysis is shown in Table~\ref{tab:icc-analysis}. The value of $s^2_C$ is (see Eqs.~\ref{eq:icc-component-variance-error} and \ref{eq:icc-component-variance-instrument}):
 \begin{center}
-$s^2_M = \frac{\Sexpr{round(Mmeansq, 2)} - \Sexpr{round(Rmeansq, 2)}}{\Sexpr{nP}} = \Sexpr{s2M}$
+$s^2_C = \frac{\Sexpr{round(Cmeansq, 2)} - \Sexpr{round(Rmeansq, 2)}}{\Sexpr{2}} = \Sexpr{s2C}$
 \end{center}
 
-The value of $s^2_M$ is slightly different than the one obtained in Section~\ref{intermediate-precision-analysis} because we are using different linear models in the calculations. The ICC is (see Eq.~\ref{eq:icc}):
+Therefore, the ICC(3, 1) is (see Eq.~\ref{eq:icc}):
 \begin{center}
-$\rho = \frac{s^2_M}{s^2_M + s^2_e} = \frac{\Sexpr{s2M}}{\Sexpr{s2M} + \Sexpr{s2e}} = \Sexpr{round(s2M/(s2M+s2e), 2)}$
+$\rho = \frac{s^2_C}{s^2_C + s^2_e} = \frac{\Sexpr{s2C}}{\Sexpr{s2C} + \Sexpr{s2e}} = \Sexpr{round(s2C/(s2C+s2e), 2)}$
 \end{center}
 
 The interpretation of $\rho$ is not evident. As a general rule, the lower the value, the less related (/similar) the measures taken by the AH and EP test suites for the same program. To interpret the ICC more easily, reference values are typically given in the literature. 

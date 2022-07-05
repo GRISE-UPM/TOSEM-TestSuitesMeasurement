@@ -2,7 +2,6 @@
 \setkeys{Gin}{width=0.60\textwidth}
 
 <<results=hide>>=
-library(xlsx)
 library(MethComp)
 library(lme4)
 library(texreg)
@@ -11,7 +10,8 @@ library(xtable)
 library(broom)
 library(emmeans)
 
-expdata <- read.xlsx("../data/Datos_Sintactica_PE_AdHoc_Fernando_NOPARALELO_1.4(corregido BSK).xls", 1)
+#expdata <- read.xlsx("../data/Datos_Sintactica_PE_AdHoc_Fernando_NOPARALELO_1.4(corregido BSK).xls", 1)
+expdata <- read.csv("../data/Datos_Sintactica_PE_AdHoc_Fernando_NOPARALELO_1.4(corregido BSK).csv")
 expdata$Group <- rep("", nrow(expdata)) 
 expdata[expdata$Session == 1 & expdata$Task == "BSK", ]$Group <- "$BSK \\rightarrow MR$"
 expdata[expdata$Session == 1 & expdata$Task == "MR", ]$Group <- "$MR \\rightarrow BSK$"
