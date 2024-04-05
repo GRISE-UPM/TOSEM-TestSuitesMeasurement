@@ -1,0 +1,19 @@
+\section{Conclusions}\label{sec:conclusions}
+
+The software metrics area is quite mature in SE. Their formal properties \cite{fenton2014software} and some common pitfalls, e.g., \cite{fenton1992software}, are well understood. However, when dealing with experimental data, it seems that we have overlooked, at least partially, the complexities of measurement. There are several reasons for that: (1) in many cases, the metrics and measuring instruments should be specifically designed for an experiment, (2) the entities of interest in SE are often theoretical constructs, so that objective measurement instruments cannot, by definition, be ever available, (3) we probably trust in excess in the power of statistics, etc.
+
+We have confirmed in this research that different test suites (often used as measuring instruments) give different measures on the same program. Such differences are so radical that they reverse the effects of the factors in the statistical analyses. We have restricted our inquiry to the response variable \textit{external quality}, frequently used in TDD experiments. However, we believe that our findings can be extrapolated to other response variables, research areas and even other research methods, e.g., case studies.
+
+Experimentation is not mature enough to introduce standard measures and measurement instruments. Of course, benchmarks can be adopted. However, the mere adoption of a benchmark does not solve the problems described in this paper because nothing guarantees that such a benchmark provides the \textit{right} measures. Even so, some action should be taken to avoid the harmful effects of metrics and measuring instruments in SE experimental research. In our opinion, three measures can be beneficial for the experimental community:
+
+\begin{itemize}
+
+\item Researchers should disclose not only the measurement results, i.e., the refined data which proceeds to analysis but also the \textbf{raw data} (e.g., subjects' code) and the \textbf{measurement procedure and instruments}. This enables later critical examination and the conduction of a wide range of replications, in particular, re-analysis \cite{mittelstaedt1984econometric,IJzendoorn1994}, where the raw data is independently re-processed before analysis. 
+
+\item The properties of the measures and measuring instruments should be considered before actual measurement takes place. In many cases, measurement standards, e.g., programs satisfying subsets of requirements, can be easily created well before the experiment is conducted, so that formal analysis and empirical studies are possible.
+
+\item When standards are not available, experimenters could use different measures and instruments to avoid threats to construct validity. Coherent results obtained with different instruments would increase the confidence in the experiment results. Just to cite an example, in the PT and EC experiments, the \textit{Treatment} (ITLD vs. TDD) \textbf{was largely unaffected} by the AH and EP test suites. This fact provides us some relief. If the treatments were unaffected, the meta-analyses and other secondary studies based on these data would produce correct results.
+
+\end{itemize}
+
+Finally, in this research, we have only addressed the influence of the measuring instruments in the measurement results. However, the measurement process, as indicated in Section~\ref{sec:comparison}, has several components. They all (in particular, the measurer and the manipulations before applying the measuring instrument) can influence the measurement result too. The assessment of the impact of those elements will be future research.

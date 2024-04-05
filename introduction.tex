@@ -1,0 +1,24 @@
+\section{Introduction}\label{sec:introduction}
+
+Test-driven development (TDD) research frequently uses the external quality (QLTY) and productivity (PROD) response variables. QLTY is typically measured as the ''amount'' of correct functionality delivered by the developers' code. PROD has a similar definition but is related to a time frame (e.g., the duration of an experimental session). "Functionality" is an abstract concept, not directly observable. In TDD research, test cases are often used as surrogates of functionality.
+
+We have conducted a family of experiments on TDD, as part of the Empirical Software Engineering Industry Lab (ESEIL) project. We used different test suites, as recommended by Shadish et al. \cite[81-82]{Shadish2002}, to measure QLTY and PROD values, thus preventing the mono-method threat to validity. We anticipated some variability among measures, but differences were much larger than we expected. The experimental analyses yield different results, sometimes reversing the effect of the independent variables, depending on the test suite used \cite{Elizabeth2015}.
+
+This paper aims at evaluating to what extent test cases influence the measurement of response variables in TDD experiments. Although the discussion is specifically framed in TDD research, measurement using test cases is frequent in software engineering (SE) research, e.g., \cite{kieburtz1996software,knight1986experimental,feldt1998generating}; other SE areas can thus benefit from our findings. 
+
+The contributions of this paper are:
+\begin{itemize}
+
+\item We show that the results of TDD experiments vary depending on the test suites used as measuring instruments. We have assessed this fact in our experiments, but we are certain that the same harmful effect happens in other TDD experiments.
+
+\item We introduce specialized terminology and methods, borrowed from Metrology, the Natural and the Social sciences, to study the accuracy of the test suites when used as measuring instruments.
+
+\item We assess that the measures made using different test suites yield very different results. The same piece of code may exhibit $\pm 60\%$ score differences depending on the test suite used.
+
+\item The publication of datasets and analysis code, as currently required by some publishers, may be sufficient for ensuring reproducibility \cite{NAP25303,fernandez2019open}, but insufficient to evaluate the influence of the measuring instruments. We propose some recommendations to improve the situation: (1) experiments should disclose all experimental materials needed to perform independent measurements, and (2) the practice of re-analysis \cite{mittelstaedt1984econometric,IJzendoorn1994} should be adopted in SE to improve experimental research. 
+
+\end{itemize}
+
+This paper has been written using reproducible research principles. The manuscript \LaTeX~code  is available at \url{https://github.com/GRISE-UPM/TestSuitesMeasurement} (including data files, Java and R code). Analyses have been carried out using R \cite{R} version 4.0.2 (2020-06-22), and the packages \textit{lme4} \cite{lme4}, \textit{xtable} \cite{xtable}, \textit{texreg} \cite{texreg}, \textit{broom} \cite{broom}, \textit{MethComp} \cite{MethComp}, \textit{Hmisc} \cite{Hmisc}, and \textit{emmeans} \cite{emmeans}.
+
+The paper is structured as follows: Section~\ref{sec:problem-description} describe the research problem. Section~\ref{sec:objectives} sets out the research goals. In Section~\ref{sec:comparison} we introduce the terminology and methods used in Metrology and other sciences for the comparison of measuring instruments. The actual comparison is performed in Section~\ref{sec:comparison-results}. We discuss the implication of our findings in Section~\ref{sec:discussion} and, finally, provide some recommendations in Section~\ref{sec:conclusions}.

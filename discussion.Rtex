@@ -1,0 +1,104 @@
+<<setup-discussion, echo=FALSE, message=FALSE, warning=FALSE, results='hide'>>=
+read_chunk("common.R")
+@
+
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Accuracy of the AH and EP test suites}
+
+<<bland-altman-analysis-2, results='hide'>>=
+
+# calculation of differences
+auxq <- expdata[c("Instrument", "Program", "QLTY")]
+auxq <- reshape(auxq, idvar = "Program", timevar = "Instrument", direction = "wide")
+auxq <- auxq[c("QLTY.EP", "QLTY.AH")]
+dqlty <- auxq$`QLTY.EP` - auxq$`QLTY.AH`
+md <- mean(dqlty)
+sd <- sd(dqlty)
+lower_limit <- round(md + 2 * sd, 2)
+upper_limit <- round(md - 2 * sd, 2)
+md <- round(md, 2)
+sd <- round(sd, 2)
+@
+
+The interpretation of the ICC is contrived. This fact, in addition to some weaknesses \cite{Bland1990,muller1994critical} of the ICC makes this procedure not that useful as a comparison method. In turn, the expanded uncertainties provided by the ISO and Bland-Altman are self-explanatory. 
+
+Regardless of the comparison method used (ISO5725-3, Bland-Altman, or ICC), the accuracy of the AH and EP test suites is rather weak. The Bland-Altman method is particularly illustrative in this regard. The difference between two measures taken on the same program can differ up to \Sexpr{round(2 * sd, 2)}\% in either direction. 
+
+The Bland-Altman plot, shown in Fig.~\ref{fig:bland-altman-plot}, is even more illustrative. Only three points, i.e., three programs, are close to the value ''0'' of the vertical axis, which denotes the coincidence between the measurements obtained with the AH and EP test suites. All other points are 10\%, 20\%, or further apart.
+
+\begin{framed}
+
+The obvious conclusion is that the AH and EP test suites are incompatible measuring instruments. They cannot be used together, because the difference between measurements obtained with each of them is too large. Such differences are likely the origin of the different experimental analysis results that we described in Section~\ref{sec:problem-description}.
+
+\end{framed}
+
+\subsection{Reason of measurement differences}
+
+Measure differences may have multiple origins, some of them minute details. For instance, the test cases in Listing \ref{lst:equivalent} pass for the Java code \lstinline!int sum(int a, int b){ return a + b; }!, but the test case \lstinline!testThreePlusMinusTwoGivesOne()! fails for the C code \lstinline!unsigned char sum(unsigned char a, unsigned char b){ return a + b; }! (in fact, the code probably would not even compile).
+
+The AH and EP test suites are not affected by data types issues, like in the previous example. When the experiments PT and EC were conducted, experimental subjects received code stubs including class and method definitions. The reason for the inconsistent measures lies in the type, and number, of test cases defined in each test suite. 
+
+Figure~\ref{fig:deviations_BSK_AH} shows a scatter plot. On the x-axis, we represent the \textit{true value} of a measurement. This true value was obtained using reference code, i.e., code that satisfies all requirements\footnote{The reference code and dataset generation procedures for this section are available as one Eclipse workspace at \url{https://github.com/GRISE-UPM/TestSuitesMeasurement/tree/master/calculation_of_deviations}.}. The task that appears in Figure~\ref{fig:deviations_BSK_AH} is BSK, and the metric displayed is PROD (the plot is easier to understand using PROD instead of QLTY). The y-axis value is the measured value using the AH test suite. If AH provided accurate measures, all points would lie in the diagonal line. Departures from the diagonal line represent measurement errors, the larger the farther apart from the diagonal line the points are. Figure~\ref{fig:deviations_BSK_EP} displays the same information for the EP test suite.
+
+The points in Figure~\ref{fig:deviations_BSK_AH} are scattered around the diagonal line. It implies that AH captures the meaning of the PROD metric. However, individual measures may have large errors. These errors have their primary origin in redundant test cases, i.e., test cases that check the same testing condition. It is fairly easy that \textit{ad-hoc} test case designers insist on multiple testing the same requirement, especially when such requirement is perceived as important. Such test cases pass or fail together, causing large up and down variations in the measured values.
+
+The points in Figure~\ref{fig:deviations_BSK_EP} exhibit a different shape. Most points are located behind the diagonal line, meaning that measured values are systematically lower than true values. Measured PROD values never exceed 40\%. The heuristics of equivalence partitioning testing explain this behavior. Equivalence partitioning puts special emphasis in \textit{invalid classes} which programmers (and \textit{ad-hoc} test case designers) tend to ignore. Actually, the reference code used to create Figures~\ref{fig:deviations_BSK_AH}~and~\ref{fig:deviations_BSK_EP} was obtained from high performing experimental subjects. Overlooking invalid classes lead to systematic low PROD values.
+
+Notice that we are not expressing an opinion about test case design methods. We simply trace (in a simplified manner, as issues may be multiple) the measurement errors to the test suite construction strategies. However, the strategy is not the critical point. The key is that measurement instruments could have been piloted to verify that they produce the right measures, i.e., the ones in the diagonal line, before actual use.
+
+\begin{figure}[!t]
+\centering
+<<deviationsBSKAH>>=
+differences_BSKAH <- read.csv("calculation_of_deviations/deviations_BSK_AH/deviations_BKS_AH.csv")
+
+
+plot(differences_BSKAH$referencePROD, differences_BSKAH$measuredPROD, xlim=c(0,100), ylim=c(0,100), xlab = "Reference measure", ylab = "Measure obtained using AH")
+abline(a=0, b=1)
+@
+  \caption{Deviations from reference value (BSK using the AH test suite)}
+  \label{fig:deviations_BSK_AH}
+\end{figure}
+
+\begin{figure}[!t]
+\centering
+<<deviationsBSKEP>>=
+differences_BSKEP <- read.csv("calculation_of_deviations/deviations_BSK_EP/deviations_BKS_EP.csv")
+plot(differences_BSKEP$referencePROD, differences_BSKEP$measuredPROD, xlim=c(0,100), ylim=c(0,100), xlab = "Reference measure", ylab = "Measure obtained using EP")
+abline(a=0, b=1)
+@
+  \caption{Deviations from reference value (BSK using the EP test suite)}
+  \label{fig:deviations_BSK_EP}
+\end{figure}
+
+\subsection{Impact in TDD research}
+
+Several synthesis works on TDD have been published recently, e.g., \cite{Rafique2013,Munir,Bissi2016,Causevic2011}. These works identify 90 empirical publications, including surveys, experience reports, case studies, quasi-experiments, and controlled experiments. At least, another 24 studies have been published in the past years, e.g., \cite{Hilton2016,Romano2016}, thus not being included in the synthesis works\footnote{We exclude our own publications, e.g., \cite{Tosun2016} from these figures.}. Out of those 114 publications, 15 experiments measure external quality, i.e., the response variable QLTY used in the PT and EC experiments. 13 out of these 15 experiments use test suites for measurement. The listing is available in Table~\ref{tab:allTDD}. Some patterns are easily noticeable:
+
+\begin{itemize}
+
+\item TDD experiments require subjects to code some experimental task. However, task specifications \textbf{are not usually disclosed}. In some cases, not even the name of the task is reported.
+
+\item Measurement is always performed using test suites. However, with the sole exception of George \& Williams \cite{George2004}, the tests suites \textbf{are not publicly available}.
+
+\item Finally, roughly 50\% of the test suites have been created by the researchers themselves; \textbf{the origin of the remaining 50\% is unknown}. The strategy for test suite creation \textbf{is never reported}.
+
+\end{itemize}
+
+Given the different measures that each test suite yields, TDD experiments may come to different conclusions due to measurement only. The fact that almost 50\% of experiments in Table~\ref{tab:allTDD} use Robert Martin's Bowling Score Keeper (BSK) strengthens our beliefs because our experiments use a modified version of the same task\footnote{See footnote \ref{foot:web}.} and we have already confirmed the impact of the test suite construction strategy on BSK. 
+
+\begin{table*}[htb]
+\centering
+%\RawFloats
+\caption{Tasks and test suites used by TDD experiments}
+\label{tab:allTDD}
+\resizebox{!}{0.9\textheight}{%
+\begin{adjustbox}{angle=90}
+\input{tables/all_tdd_experiments}
+\end{adjustbox}
+}
+\end{table*}
+
+\subsection{Impact in SE research}
+
+Test suites are not used in TDD only. Many experiments, e.g., \cite{kieburtz1996software,knight1986experimental,feldt1998generating}, conducted in other areas of SE, utilize test cases for measurement purposes. It is highly likely that the same dependence between test suites and experimental results take place there too.
