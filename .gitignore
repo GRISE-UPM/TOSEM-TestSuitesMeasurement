@@ -22,4 +22,6 @@
 *.pdf
 *.out
 *.synctex.gz
-
+.Rhistory
+paper.tex
+paper-concordance.tex

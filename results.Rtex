@@ -81,27 +81,27 @@ When the Ah and EP test suites are used as measuring instruments (e.g., in two d
 
 \begin{figure}[!t]
 <<bland-altman-analysis-1, results='hide'>>=
-# extract the data required by Meth: Instrument, item measured, replication number...
-#item <- do.call(paste0, expdata[c(2, 3)])
-#meth <- expdata$Instrument
-#repl <- rep(1, nrow(expdata))
-
-# QLTY measurement
-#y <- expdata$QLTY
-#dataqlty <- Meth(data.frame(meth, item, repl, y))
-
-# Bland-altman plots
-#par(mar=c(5, 4, 4, 4) + 0.1)
-#BA.plot(dataqlty, 
-#        main = "Quality",
-#        alpha = NULL,
-#        axlim=c(0,100), 
-#        diflim = c(-100, 100), 
-#        digits = 2, 
-#        col.lines = "black",
-#        cex =  0.8,
-#        las = 1,
-#        pch = 1)
+# # extract the data required by Meth: Instrument, item measured, replication number...
+# item <- do.call(paste0, expdata[c(2, 3)])
+# meth <- expdata$Instrument
+# repl <- rep(1, nrow(expdata))
+# 
+# # QLTY measurement
+# y <- expdata$QLTY
+# dataqlty <- Meth(data.frame(meth, item, repl, y))
+# 
+# # Bland-altman plots
+# par(mar=c(5, 4, 4, 4) + 0.1)
+# BA.plot(dataqlty,
+#         main = "Quality",
+#         alpha = NULL,
+#         axlim=c(0,100),
+#         diflim = c(-100, 100),
+#         digits = 2,
+#         col.lines = "black",
+#         cex =  0.8,
+#         las = 1,
+#         pch = 1)
 
 # calculation of differences
 auxq <- expdata[c("Instrument", "Program", "QLTY")]
