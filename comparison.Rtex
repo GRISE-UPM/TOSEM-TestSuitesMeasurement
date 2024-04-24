@@ -6,6 +6,7 @@ read_chunk("common.R")
 
 In this section, we will answer \textbf{RQ1: \textit{How} can we assess the accuracy of the measures obtained using test suites?}
 
+
 Depending on the scientific area, different strategies to compare measurement methods are used. Engineers and Natural Science practitioners are probably acquainted with the approaches advocated by JCGM (Joint Committee for Guides in Metrology) and ISO (International Standards Organization). In the Health Sciences, the Bland-Altman plot and the Intraclass Correlation Coefficient (ICC) are often used. The ICC has also been used in Psychology and the Social Sciences.
 
 \subsection{Fundamental concepts}
